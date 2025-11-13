@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Pi Telemetry</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
+  <style>
+    .alert-fixed {
+      position: fixed;
+      top: 40px;
+      left: 5%;
+      width: 90%;
+      z-index: 9999;
+      border-radius: 10px
+    }
+  </style>
+</head>
+
+
+<body>
+
+  <div class="jumbotron text-center">
+    <h1>Telemetry Setup </h1>
+  </div>
+
+  <div class="alert alert-success alert-fixed hide" role="alert">
+    <h4 class="alert-heading">Success</h4>
+    <p>Configuration updated successfuly</p>
+  </div>
+
+  <div class="container mt-4">
+
+    <form method="POST" id="form" enctype="multipart/form-data">
+
+      <div class="col-sm-10">
+
+        <p>firmware version: {%if VERSION %}{{ VERSION }}{% endif %}</p>
+
+
+        <div class="form-group row">
+
+          <label for="clientid" class="col-sm-2 col-form-label">Device ID:</label>
+
+          <div class="col-sm-10">
+            <input type="text" class="form-control" id="clientid" value="{%if DEVID %}{{ DEVID }}{% endif %}" required>
+          </div>
+
+        </div>
+
+
+        <h4>MQTT Setup</h4>
+        <div class="form-group row">
+          <label for="host" class="col-sm-2 col-form-label">Broker:</label>
+          <div class="col-sm-10">
+            <input type="text" class="form-control" id="host" value="{%if HOST %}{{ HOST }}{% endif %}" required>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label for="port" class="col-sm-2 col-form-label">Port:</label>
+          <div class="col-sm-10">
+            <input type="text" class="form-control" id="port" value="{%if PORT %}{{ PORT }}{% endif %}" required>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label for="username" class="col-sm-2 col-form-label">Username:</label>
+          <div class="col-sm-10">
+            <input type="text" class="form-control" id="username" value="{%if USERNAME %}{{ USERNAME }}{% endif %}">
+          </div>
+        </div>
+        <div class="form-group row">
+          <label for="password" class="col-sm-2 col-form-label">Password:</label>
+          <div class="col-sm-10">
+            <input type="text" class="form-control" class="form-control" id="password"
+              value="{%if PASSWORD %}{{ PASSWORD }}{% endif %}">
+          </div>
+        </div>
+        <div class="form-group row">
+          <label for="Interval" class="col-sm-2 col-form-label">Update Interval:</label>
+          <div class="col-sm-10">
+            <input type="number" class="form-control" id="interval"
+              value="{%if INTERVAL %}{{ INTERVAL }}{% endif %}">
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <h4>Sensor Offsets</h4>
+        <div class="form-group row">
+          <label for="tempoffset" class="col-sm-2 col-form-label">Temperature:</label>
+          <div class="col-sm-10">
+            <input type="number" class="form-control" id="tempoffset"
+              value="{%if TEMPOFFSET %}{{ TEMPOFFSET }}{% endif %}" step=".01">
+          </div>
+        </div>
+        <div class="form-group row">
+          <label for="humoffset" class="col-sm-2 col-form-label">Humidity:</label>
+          <div class="col-sm-10">
+            <input type="number" class="form-control" id="humoffset" value="{%if HUMOFFSET %}{{ HUMOFFSET }}{% endif %}">
+          </div>
+        </div>
+        <div class="form-group row">
+          <label for="pm25offset" class="col-sm-2 col-form-label">PM2.5:</label>
+          <div class="col-sm-10">
+            <input type="number" class="form-control" id="pm25offset"
+              value="{%if PM25OFFSET %}{{ PM25OFFSET }}{% endif %}">
+          </div>
+        </div>
+        <div class="form-group row">
+          <label for="luxoffset" class="col-sm-2 col-form-label">Lux:</label>
+          <div class="col-sm-10">
+            <input type="number" class="form-control" id="luxoffset" value="{%if LUXOFFSET %}{{ LUXOFFSET }}{% endif %}">
+          </div>
+        </div>
+      </div>
+      <hr>
+      <div class="row">
+        <div class="col"></div>
+        <div class="col">
+          <div class="row pb-4 .align-items-center ">
+            <button type="submit" class="btn btn-primary btn-block">Save</button>
+          </div>
+        </div>
+        <div class="col"></div>
+      </div>
+
+
+    </form>
+  </div>
+</body>
+
+<script>
+  $(document).ready(function () {
+      $('.alert').hide();
+});
+  
+  $("form").submit(function (event) {
+    event.preventDefault();
+
+    var fdata = {}
+    var Form = this;
+    $.each(this.elements, function (i, v) {
+      var input = $(v);
+      fdata[input.attr("id")] = input.val();
+      delete fdata["undefined"];
+    });
+    var json = JSON.stringify(fdata);
+    console.log(json);
+    $.ajax({
+      type: "POST",
+      url: "/settings",
+      contentType: 'application/json',
+      data: json,
+      success: function (msg) {
+        $('.alert').show();
+        var delayInMilliseconds = 3000; //3 second
+        setTimeout(function () {
+          $('.alert').hide();
+        }, delayInMilliseconds);
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        if (jqXHR.status == 500) {
+          alert('Internal error: ' + jqXHR.responseText);
+        } else {
+          alert('Unexpected error.');
+        }
+      }
+    }).done(function (data) {
+      console.log(data);
+    });
+
+  });
+</script>
+
+</html>

@@ -1,0 +1,13 @@
+After copy the file, give permission to it
+1. Open Command Line Interface
+2. Go to src folder.
+3. sudo chmod u+x Install.sh
+4. sudo ./Install.sh
+
+OS environment: 32bit(must), Bullseye.
+
+Other Info:
+1. src/main.c is the main file that runs the telemetry.
+2. bin/config.json saves all configuration, can be updated using Telemtry uapp.
+3. bin/aht.py is a working python version that only reads from sensor.
+4. bin/stopbuzzeronce.txt is used for temporarily off the buzzer.
